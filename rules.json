@@ -1,0 +1,171 @@
+{
+  "rules": [
+    {
+      "criteria": [
+        {
+          "field": "description",
+          "operation": "begins-with",
+          "value": "ATM CHECK DEPOSIT"
+        }
+      ],
+      "action": "rename",
+      "action-value": "ATM CHECK DEPOSIT"
+    },
+    {
+      "criteria": [
+        {
+          "field": "description",
+          "operation": "begins-with",
+          "value": "ATM WITHDRAWAL"
+        }
+      ],
+      "action": "rename",
+      "action-value": "ATM WITHDRAWAL"
+    },
+    {
+      "criteria": [
+        {
+          "field": "description",
+          "operation": "begins-with",
+          "value": "CHASE CREDIT CRD AUTOPAY"
+        }
+      ],
+      "action": "delete"
+    },
+    {
+      "criteria": [
+        {
+          "field": "description",
+          "operation": "begins-with",
+          "value": "CHECK #"
+        }
+      ],
+      "action": "strip"
+    },
+    {
+      "criteria": [
+        { "field": "description", "operation": "contains", "value": "chevron" }
+      ],
+      "action": "categorize",
+      "category1": "auto",
+      "category2": "gasoline"
+    },
+    {
+      "criteria": [
+        {
+          "field": "description",
+          "operation": "begins-with",
+          "value": "CITI CARD ONLINE PAYMENT"
+        }
+      ],
+      "action": "delete"
+    },
+    {
+      "criteria": [
+        {
+          "field": "description",
+          "operation": "begins-with",
+          "value": "Essex Property T RENTAL"
+        }
+      ],
+      "action": "categorize",
+      "category1": "utilities",
+      "category2": "aum"
+    },
+    {
+      "criteria": [
+        {
+          "field": "description",
+          "operation": "begins-with",
+          "value": "FRANCHISE TAX"
+        },
+        { "field": "type", "operation": "equals", "value": "credit" }
+      ],
+      "action": "categorize",
+      "category1": "tax",
+      "category2": "refund"
+    },
+    {
+      "criteria": [
+        {
+          "field": "description",
+          "operation": "begins-with",
+          "value": "HUMANA,  INC"
+        }
+      ],
+      "action": "categorize",
+      "category1": "medical",
+      "category2": "insurance"
+    },
+    {
+      "criteria": [
+        {
+          "field": "description",
+          "operation": "begins-with",
+          "value": "INTEREST PAYMENT"
+        }
+      ],
+      "action": "categorize",
+      "category1": "income",
+      "category2": "interest"
+    },
+    {
+      "criteria": [
+        {
+          "field": "description",
+          "operation": "begins-with",
+          "value": "IRS  TREAS"
+        }
+      ],
+      "action": "categorize",
+      "category1": "tax",
+      "category2": "refund"
+    },
+    {
+      "criteria": [
+        {
+          "field": "description",
+          "operation": "begins-with",
+          "value": "Morgan Stanley"
+        },
+        { "field": "type", "operation": "equals", "value": "credit" }
+      ],
+      "action": "delete"
+    },
+    {
+      "criteria": [
+        {
+          "field": "description",
+          "operation": "begins-with",
+          "value": "MORGAN STANLEY & DIR DEP"
+        }
+      ],
+      "action": "categorize",
+      "category1": "income",
+      "category2": "morgan-stanley"
+    },
+    {
+      "criteria": [
+        { "field": "description", "operation": "begins-with", "value": "NY STATE"},
+        { "field": "description", "operation": "contains", "value": "NYSTTAXRFD"}
+      ],
+      "action": "categorize",
+      "category1": "tax",
+      "category2": "refund"
+    },
+    {
+      "criteria": [
+        { "field": "description", "operation": "contains", "value": "Online Payment" }
+      ],
+      "action": "strip"
+    },
+    {
+      "criteria": [
+        { "field": "description", "operation": "contains", "value": "Bel Air II"},
+        { "field": "type", "operation": "equals", "value": "debit"}
+      ],
+      "action": "categorize",
+      "category1": "rent"
+    }
+  ]
+}
