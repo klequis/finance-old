@@ -1,8 +1,7 @@
 import mongodb, { ObjectID } from 'mongodb'
-import { removeIdProp } from 'lib'
-import config from '../config'
-import { hasProp } from 'lib'
-import { mergeRight, isEmpty, isNil } from 'ramda'
+import { removeIdProp, hasProp } from 'lib'
+import config from 'config'
+import { mergeRight, isEmpty } from 'ramda'
 // eslint-disable-next-line
 import { green } from 'logger'
 
@@ -34,9 +33,11 @@ const connectDB = async () => {
         useNewUrlParser: true
       })
     }
-    return { db: client.db(cfg.dbName) }
+    const ret = { db: client.db(cfg.dbName) }
+    return ret
   } catch (e) {
-    throw new Error('Unable to connect to MongoDB')
+    throw new Error(e)
+    // throw new Error('Unable to connect to MongoDB')
   }
 }
 
@@ -77,7 +78,7 @@ export const dropCollection = async collection => {
     const { db } = await connectDB()
     return await db.collection(collection).drop()
   } catch (e) {
-    if ((e.message = 'ns not found')) {
+    if (e.message === 'ns not found') {
       return true
     } else {
       throw new Error(e.message)
@@ -216,4 +217,26 @@ export const findOneAndUpdate = async (
   } catch (e) {
     throw new Error(e.message)
   }
+}
+
+export const updateMany = async (collection, filter = {}, set) => {
+  const { db } = await connectDB()
+  const r = await db.collection(collection).updateMany(filter, { $set: set })
+  // console.log('updateMany: r', r)
+  // green('**************************')
+  // green(r.modifiedCount)
+  // green(r.matchedCount)
+  return { matchedCount: r.matchedCount, modifiedCount: r.modifiedCount }
+}
+
+const a = {
+  result: { n: 1, nModified: 1, ok: 1 },
+  connection: { id: 0, host: 'localhost', port: 27017 },
+  modifiedCount: 1,
+  upsertedId: null,
+  upsertedCount: 0,
+  matchedCount: 1,
+  n: 1,
+  nModified: 1,
+  ok: 1
 }

@@ -1,1 +1,1 @@
-export const TODO_COLLECTION_NAME = 'todos'
+export const DATA_COLLECTION_NAME = 'data'

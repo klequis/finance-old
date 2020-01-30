@@ -9,5 +9,6 @@ export {
   findOneAndDelete,
   findOneAndUpdate,
   insertMany,
-  insertOne
+  insertOne,
+  updateMany
 } from './dbFunctions'

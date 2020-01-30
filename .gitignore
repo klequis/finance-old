@@ -16,3 +16,5 @@ lib-cov
 .nyc_output
 config.settings.js
 tmp.js
+*.xls*
+*.csv

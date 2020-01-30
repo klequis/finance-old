@@ -9,7 +9,7 @@
         }
       ],
       "action": "rename",
-      "action-value": "ATM CHECK DEPOSIT"
+      "actionValue": "ATM CHECK DEPOSIT"
     },
     {
       "criteria": [
@@ -20,7 +20,7 @@
         }
       ],
       "action": "rename",
-      "action-value": "ATM WITHDRAWAL"
+      "actionValue": "ATM WITHDRAWAL"
     },
     {
       "criteria": [
