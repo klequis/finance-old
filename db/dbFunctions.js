@@ -112,7 +112,12 @@ export const insertOne = async (collection, data) => {
  * @returns {array}
  *
  */
-export const find = async (collection, filter = {}, projection = {}) => {
+export const find = async (
+  collection,
+  filter = {},
+  projection = {},
+  collation = {}
+) => {
   const f = idStringToObjectID(filter)
   try {
     const { db } = await connectDB()
@@ -120,6 +125,7 @@ export const find = async (collection, filter = {}, projection = {}) => {
       .collection(collection)
       .find(f)
       .project(projection)
+      .collation(collation)
       .toArray()
   } catch (e) {
     throw new Error(e.message)
@@ -190,11 +196,13 @@ export const findOneAndDelete = async (collection, filter) => {
   }
 }
 
-
 export const deleteMany = async (collection, filter) => {
+  // green('deleteMany: filter', filter)
   try {
     const { db } = await connectDB()
+    green('hi')
     const r = await db.collection(collection).deleteMany(filter)
+    green('deleteMany: r.deletedCount', r.deletedCount)
     return r
   } catch (e) {
     throw new Error(e.message)
@@ -241,14 +249,19 @@ export const updateMany = async (collection, filter = {}, set) => {
   return { matchedCount: r.matchedCount, modifiedCount: r.modifiedCount }
 }
 
-const a = {
-  result: { n: 1, nModified: 1, ok: 1 },
-  connection: { id: 0, host: 'localhost', port: 27017 },
-  modifiedCount: 1,
-  upsertedId: null,
-  upsertedCount: 0,
-  matchedCount: 1,
-  n: 1,
-  nModified: 1,
-  ok: 1
+export const createIndex = async (collection, field, options = {}) => {
+  const { db } = await connectDB()
+  const r = await db.collection(collection).createIndex(field, options)
 }
+
+// const a = {
+//   result: { n: 1, nModified: 1, ok: 1 },
+//   connection: { id: 0, host: 'localhost', port: 27017 },
+//   modifiedCount: 1,
+//   upsertedId: null,
+//   upsertedCount: 0,
+//   matchedCount: 1,
+//   n: 1,
+//   nModified: 1,
+//   ok: 1
+// }

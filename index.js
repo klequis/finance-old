@@ -1,7 +1,8 @@
 import fs from 'fs'
-import csv from 'csvtojson'
-import { dropCollection, deleteMany, insertMany, updateMany } from 'db'
+import { deleteMany, find, updateMany } from 'db'
 import { DATA_COLLECTION_NAME } from 'db/constants'
+import { mergeAll } from 'ramda'
+import loadData from './load-data'
 // eslint-disable-next-line
 import { green, greenf, redf } from 'logger'
 
@@ -9,28 +10,6 @@ const readRules = async () => {
   const rules = await fs.promises.readFile('rules.json')
   const json = await JSON.parse(rules)
   return json
-}
-
-const readChaseChecking = async () => {
-  const json = await csv({
-    trim: true,
-    checkType: true
-  }).fromFile('data/chase.carl.checking.2465.csv')
-  return json
-}
-
-// readRules().then(rules => console.log(rules))
-
-const transformChaseChk = data => {
-  return data.map(r => {
-    return {
-      date: new Date(r['Posting Date']).toISOString(),
-      description: r.Description,
-      debit: r.Amount <= 0 ? r.Amount : null,
-      credit: r.Amount <= 0 ? null : r.Amount,
-      typeOrig: r.Type
-    }
-  })
 }
 
 // rename action-value
@@ -98,29 +77,70 @@ const conditionBuilder = criteria => {
 
 const filterBuilder = criteria => {
   if (criteria.length === 1) {
+    return conditionBuilder(criteria[0])
+  } else {
+    return { $and: [] }
   }
 }
 
 // delete [none]
 const deleteAction = async r => {
-  const filter = r.criteria.map(async criteria => {
+  const { criteria } = r
+
+  let filter
+  if (criteria.length > 1) {
+    green('criteria', criteria)
+    // const works = {
+    //   $and: [
+    //     { description: { $regex: '^NY STATE' } },
+    //     { description: { $regex: 'NYSTTAXRFD' } }
+    //   ]
+    // }
+
+    const x = mergeAll(
+      criteria.map(c => {
+        // const { field, operation, value } = c
+        const ret = conditionBuilder(c)
+        green('ret', ret)
+        return ret
+      })
+    )
+    filter = { $and: [x] }
+    // green('works', works)
+    green('filter', filter)
+    // green('y', y)
+  } else {
+    return
+    const criteria = r.criteria[0]
     const { field, operation, value } = criteria
     switch (operation) {
       case 'beginsWith':
-        return operationBeginsWith(field, value)
+        filter = operationBeginsWith(field, value)
+        break
       case 'equals':
-        return operationEquals(field, value)
+        filter = operationEquals(field, value)
+        break
       default:
         redf(
           'deleteAction ERROR: ',
           `operation ${operation} not covered in switch`
         )
     }
-  })
-  const dm = await deleteMany(DATA_COLLECTION_NAME, filter)
+  }
+  // green('filter', filter)
+  const f = await find(
+    DATA_COLLECTION_NAME,
+    filter,
+    {},
+    // { caseLevel: true, locale: 'en_US' }
+    { locale: 'en', strength: 2 }
+  )
+  // green('f', f)
+  green('documents returned', f.length)
 
-  greenf(`Deleted ${dm.deletedCount} documents`)
-  greenf(`    filter: ${filter}`)
+  // const dm = await deleteMany(DATA_COLLECTION_NAME, filter)
+  // greenf(`Deleted ${dm.deletedCount} documents`)
+  // greenf(`    filter: ${filter}`)
 }
 
 // strip  [none]
@@ -128,32 +148,9 @@ const stripAction = async r => {}
 // categorize category1, [category2]
 const categorizeAction = async r => {}
 
-// const getRule = (r) => {
-//   switch (r.action) {
-//     case 'rename':
-//       return {
-//         criteria: r.criteria,
-//         action: r.action,
-//         actionValue: r.actionValue
-//       }
-//     case 'delete':
-//     case 'strip':
-//       return {
-//         criteria: r.criteria,
-//         action: 'delete'
-//       }
-//     default:
-//       return null
-//   }
-// }
-
 const main = async () => {
-  console.log()
-  green('****** New run ******')
-  await dropCollection(DATA_COLLECTION_NAME)
-  const chaseJSON = await readChaseChecking()
-  const newChaseJSON = await transformChaseChk(chaseJSON)
-  await insertMany(DATA_COLLECTION_NAME, newChaseJSON)
+  await loadData()
+  // return
   const rules = await readRules()
 
   // keep
@@ -169,16 +166,16 @@ const main = async () => {
   rules.rules.forEach(r => {
     switch (r.action) {
       case 'rename':
-        renameAction(r)
+        // renameAction(r)
         break
       case 'delete':
         deleteAction(r)
         break
       case 'strip':
-        stripAction(r)
+        // stripAction(r)
         break
       case 'categorize':
-        categorizeAction(r)
+        // categorizeAction(r)
         break
       default:
         redf('ERROR', `unknown action ${r.action}`)

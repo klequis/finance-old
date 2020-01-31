@@ -128,7 +128,7 @@
           "operation": "beginsWith",
           "value": "Morgan Stanley"
         },
-        { "field": "type", "operation": "equals", "value": "credit" }
+        { "field": "typeOrig", "operation": "equals", "value": "ACH_CREDIT" }
       ],
       "action": "delete"
     },

@@ -2,6 +2,7 @@
 
 export {
   close,
+  createIndex,
   deleteMany,
   dropCollection,
   find,
