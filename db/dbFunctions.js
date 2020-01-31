@@ -30,7 +30,8 @@ const connectDB = async () => {
     const cfg = config()
     if (!client) {
       client = await MongoClient.connect(cfg.mongoUri, {
-        useNewUrlParser: true
+        useNewUrlParser: true,
+        useUnifiedTopology: true
       })
     }
     const ret = { db: client.db(cfg.dbName) }
@@ -184,6 +185,17 @@ export const findOneAndDelete = async (collection, filter) => {
       )
     }
     return [r.value]
+  } catch (e) {
+    throw new Error(e.message)
+  }
+}
+
+
+export const deleteMany = async (collection, filter) => {
+  try {
+    const { db } = await connectDB()
+    const r = await db.collection(collection).deleteMany(filter)
+    return r
   } catch (e) {
     throw new Error(e.message)
   }

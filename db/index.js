@@ -2,6 +2,7 @@
 
 export {
   close,
+  deleteMany,
   dropCollection,
   find,
   findById,

@@ -4,7 +4,7 @@
       "criteria": [
         {
           "field": "description",
-          "operation": "begins-with",
+          "operation": "beginsWith",
           "value": "ATM CHECK DEPOSIT"
         }
       ],
@@ -15,7 +15,7 @@
       "criteria": [
         {
           "field": "description",
-          "operation": "begins-with",
+          "operation": "beginsWith",
           "value": "ATM WITHDRAWAL"
         }
       ],
@@ -26,7 +26,7 @@
       "criteria": [
         {
           "field": "description",
-          "operation": "begins-with",
+          "operation": "beginsWith",
           "value": "CHASE CREDIT CRD AUTOPAY"
         }
       ],
@@ -36,7 +36,7 @@
       "criteria": [
         {
           "field": "description",
-          "operation": "begins-with",
+          "operation": "beginsWith",
           "value": "CHECK #"
         }
       ],
@@ -54,7 +54,7 @@
       "criteria": [
         {
           "field": "description",
-          "operation": "begins-with",
+          "operation": "beginsWith",
           "value": "CITI CARD ONLINE PAYMENT"
         }
       ],
@@ -64,7 +64,7 @@
       "criteria": [
         {
           "field": "description",
-          "operation": "begins-with",
+          "operation": "beginsWith",
           "value": "Essex Property T RENTAL"
         }
       ],
@@ -76,7 +76,7 @@
       "criteria": [
         {
           "field": "description",
-          "operation": "begins-with",
+          "operation": "beginsWith",
           "value": "FRANCHISE TAX"
         },
         { "field": "type", "operation": "equals", "value": "credit" }
@@ -89,7 +89,7 @@
       "criteria": [
         {
           "field": "description",
-          "operation": "begins-with",
+          "operation": "beginsWith",
           "value": "HUMANA,  INC"
         }
       ],
@@ -101,7 +101,7 @@
       "criteria": [
         {
           "field": "description",
-          "operation": "begins-with",
+          "operation": "beginsWith",
           "value": "INTEREST PAYMENT"
         }
       ],
@@ -113,7 +113,7 @@
       "criteria": [
         {
           "field": "description",
-          "operation": "begins-with",
+          "operation": "beginsWith",
           "value": "IRS  TREAS"
         }
       ],
@@ -125,7 +125,7 @@
       "criteria": [
         {
           "field": "description",
-          "operation": "begins-with",
+          "operation": "beginsWith",
           "value": "Morgan Stanley"
         },
         { "field": "type", "operation": "equals", "value": "credit" }
@@ -136,7 +136,7 @@
       "criteria": [
         {
           "field": "description",
-          "operation": "begins-with",
+          "operation": "beginsWith",
           "value": "MORGAN STANLEY & DIR DEP"
         }
       ],
@@ -146,7 +146,7 @@
     },
     {
       "criteria": [
-        { "field": "description", "operation": "begins-with", "value": "NY STATE"},
+        { "field": "description", "operation": "beginsWith", "value": "NY STATE"},
         { "field": "description", "operation": "contains", "value": "NYSTTAXRFD"}
       ],
       "action": "categorize",
