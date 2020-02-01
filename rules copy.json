@@ -30,8 +30,8 @@
     },
     {
       "id": 3,
-      "expectRows": 5,
-      "compassQuery": "{ description: { $regex: '^ATM WITHDRAWAL', $options: 'im' } }",
+      "expectRows": 0,
+      "compassQuery": "",
       "criteria": [
         {
           "field": "description",
@@ -44,8 +44,8 @@
     },
     {
       "id": 4,
-      "expectRows": 24,
-      "compassQuery": "{ description: { $regex: '^CHASE CREDIT CRD AUTOPAY', $options: 'im' } }",
+      "expectRows": 0,
+      "compassQuery": "",
       "criteria": [
         {
           "field": "description",
@@ -57,8 +57,8 @@
     },
     {
       "id": 5,
-      "expectRows": 3,
-      "compassQuery": "{ description: { $regex: '^CHECK #', $options: 'im' } }",
+      "expectRows": 0,
+      "compassQuery": "",
       "criteria": [
         {
           "field": "description",
@@ -70,8 +70,8 @@
     },
     {
       "id": 6,
-      "expectRows": 2,
-      "compassQuery": "{ description: { $regex: 'chevron', $options: 'im' } }",
+      "expectRows": 0,
+      "compassQuery": "",
       "criteria": [
         { "field": "description", "operation": "contains", "value": "chevron" }
       ],
@@ -81,8 +81,8 @@
     },
     {
       "id": 7,
-      "expectRows": 13,
-      "compassQuery": "{ description: { $regex: '^CITI CARD ONLINE PAYMENT', $options: 'im' } }",
+      "expectRows": 0,
+      "compassQuery": "",
       "criteria": [
         {
           "field": "description",
@@ -94,8 +94,8 @@
     },
     {
       "id": 8,
-      "expectRows": 3,
-      "compassQuery": "{ description: { $regex: '^Essex Property T RENTAL', $options: 'im' } }",
+      "expectRows": 0,
+      "compassQuery": "",
       "criteria": [
         {
           "field": "description",
@@ -109,8 +109,8 @@
     },
     {
       "id": 9,
-      "expectRows": 1,
-      "compassQuery": "{ description: { $regex: '^FRANCHISE TAX', $options: 'im' } }",
+      "expectRows": 0,
+      "compassQuery": "",
       "criteria": [
         {
           "field": "description",
@@ -125,8 +125,8 @@
     },
     {
       "id": 10,
-      "expectRows": 12,
-      "compassQuery": "{ description: { $regex: '^HUMANA,  INC', $options: 'im' } }",
+      "expectRows": 0,
+      "compassQuery": "",
       "criteria": [
         {
           "field": "description",
@@ -140,8 +140,8 @@
     },
     {
       "id": 11,
-      "expectRows": 13,
-      "compassQuery": "{ description: { $regex: '^INTEREST PAYMENT', $options: 'im' } }",
+      "expectRows": 0,
+      "compassQuery": "",
       "criteria": [
         {
           "field": "description",
@@ -155,8 +155,8 @@
     },
     {
       "id": 12,
-      "expectRows": 1,
-      "compassQuery": "{ description: { $regex: '^IRS  TREAS', $options: 'im' } }",
+      "expectRows": 0,
+      "compassQuery": "",
       "criteria": [
         {
           "field": "description",
@@ -171,8 +171,8 @@
     
     {
       "id": 13,
-      "expectRows": 4,
-      "compassQuery": "{ description: { $regex: '^MORGAN STANLEY & DIR DEP', $options: 'im' } }",
+      "expectRows": 0,
+      "compassQuery": "",
       "criteria": [
         {
           "field": "description",
@@ -186,8 +186,8 @@
     },
     {
       "id": 14,
-      "expectRows": 1,
-      "compassQuery": "{ $and: [ { description: { $regex: '^NY STATE' } },  { description: { $regex: 'NYSTTAXRFD' } }] }",
+      "expectRows": 0,
+      "compassQuery": "",
       "criteria": [
         { "field": "description", "operation": "beginsWith", "value": "NY STATE"},
         { "field": "description", "operation": "contains", "value": "NYSTTAXRFD"}
@@ -198,8 +198,8 @@
     },
     {
       "id": 15,
-      "expectRows": 51,
-      "compassQuery": "{ description: { $regex: '^Online Payment', $options: 'im' } }",
+      "expectRows": 0,
+      "compassQuery": "",
       "criteria": [
         { "field": "description", "operation": "contains", "value": "Online Payment" }
       ],
@@ -208,24 +208,13 @@
     {
       "id": 16,
       "expectRows": 0,
-      "compassQuery": "{ $and: [ { description: { $regex: 'Bel Air II' } },  { typeOrig: { $eq: 'BILLPAY' } }] }",
+      "compassQuery": "",
       "criteria": [
         { "field": "description", "operation": "contains", "value": "Bel Air II"},
-        { "field": "typeOrig", "operation": "equals", "value": "BILLPAY"}
+        { "field": "type", "operation": "equals", "value": "debit"}
       ],
       "action": "categorize",
       "category1": "rent"
-    },
-    {
-      "id": 17,
-      "expectRows": 9,
-      "compassQuery": "{ $and: [ { description: { $regex: 'Bel Air Apts - Phase II' } },  { typeOrig: { $eq: 'BILLPAY' } }] }",
-      "criteria": [
-        { "field": "description", "operation": "contains", "value": "Bel Air Apts - Phase II"},
-        { "field": "typeOrig", "operation": "equals", "value": "BILLPAY"}
-      ],
-      "action": "categorize",
-      "category1": "aum"
     }
     
   ]

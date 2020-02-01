@@ -32,7 +32,7 @@ const renameAction = async r => {
 }
 
 const operationBeginsWith = (field, value) => {
-  return { [field]: { $regex: `^${value}` } }
+  return { [field]: { $regex: `^${value}`, $options: 'im' } }
 }
 
 const operationEquals = (field, value) => {
@@ -110,24 +110,26 @@ const deleteAction = async r => {
     green('filter', filter)
     // green('y', y)
   } else {
-    return
-    const criteria = r.criteria[0]
-    const { field, operation, value } = criteria
-    switch (operation) {
-      case 'beginsWith':
-        filter = operationBeginsWith(field, value)
-        break
-      case 'equals':
-        filter = operationEquals(field, value)
-        break
-      default:
-        redf(
-          'deleteAction ERROR: ',
-          `operation ${operation} not covered in switch`
-        )
-    }
+
+    // return
+    // const criteria = r.criteria[0]
+    // const { field, operation, value } = criteria
+    // switch (operation) {
+    //   case 'beginsWith':
+    //     filter = operationBeginsWith(field, value)
+    //     break
+    //   case 'equals':
+    //     filter = operationEquals(field, value)
+    //     break
+    //   default:
+    //     redf(
+    //       'deleteAction ERROR: ',
+    //       `operation ${operation} not covered in switch`
+    //     )
+    // }
   }
   // green('filter', filter)
+  green('filter', filter)
   const f = await find(
     DATA_COLLECTION_NAME,
     filter,
@@ -138,9 +140,9 @@ const deleteAction = async r => {
   // green('f', f)
   green('documents returned', f.length)
 
-  // const dm = await deleteMany(DATA_COLLECTION_NAME, filter)
-  // greenf(`Deleted ${dm.deletedCount} documents`)
-  // greenf(`    filter: ${filter}`)
+  const dm = await deleteMany(DATA_COLLECTION_NAME, filter, {}, { locale: 'en', strength: 2 })
+  greenf(`Deleted ${dm.deletedCount} documents`)
+  greenf(`    filter: ${filter}`)
 }
 
 // strip  [none]
