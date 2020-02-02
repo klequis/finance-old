@@ -1,5 +1,5 @@
 import fs from 'fs'
-import { deleteMany, find, updateMany } from 'db'
+import { deleteMany, find, updateMany, findOneAndUpdate } from 'db'
 import { DATA_COLLECTION_NAME } from 'db/constants'
 import { mergeAll } from 'ramda'
 import loadData from './load-data'
@@ -13,7 +13,7 @@ const readRules = async () => {
 }
 
 const wrappedFind = async filter => {
-  green('filter', filter)
+  // green('filter', filter)
   return find(
     DATA_COLLECTION_NAME,
     filter,
@@ -60,9 +60,7 @@ const filterBuilder = criteria => {
   } else {
     const x = mergeAll(
       criteria.map(c => {
-        // const { field, operation, value } = c
         const ret = conditionBuilder(c)
-        green('ret', ret)
         return ret
       })
     )
@@ -70,119 +68,128 @@ const filterBuilder = criteria => {
   }
 }
 
+const printResult = (fName, id, expectRows, actualRows) => {
+  console.log('---')
+  console.log(`** ${fName} id: ${id}`)
+  // yellow('actualRows', actualRows)
+  expectRows === actualRows
+    ? greenf(`OK: id: ${id}, expected: ${expectRows}, actual: ${actualRows}`)
+    : redf(`ERROR: id: ${id}, expected: ${expectRows}, actual: ${actualRows}`)
+}
 
 const renameAction = async r => {
-  const { criteria, actionValue } = r
-  const from = criteria[0].value
-  const to = actionValue
-
+  const { criteria, expectRows, id, action } = r
+  const { actionValue: to } = action
   const filter = filterBuilder(criteria)
+
   // tmp code
   const f = await wrappedFind(filter)
-  green('rename - documents', f.length)
+  printResult('renameAction', id, expectRows, f.length)
   // tmp code
 
-  // const um = await updateMany(
-  //   DATA_COLLECTION_NAME,
-  //   filterBuilder(criteria),
-  //   { description: to }
-  // )
+  const um = await updateMany(DATA_COLLECTION_NAME, filter, { description: to })
 
   // greenf(`Renamed ${um.modifiedCount} documents`)
   // greenf('    from: ', from)
   // greenf('    to: ', to)
 }
 
-const a = {
-  criteria: [
-    {
-      field: 'description',
-      operation: 'beginsWith',
-      value: 'Morgan Stanley'
-    },
-    { field: 'type', operation: 'equals', value: 'credit' }
-  ],
-  action: 'delete'
-}
-
-const b = {
-  $and: [
-    { description: { $regex: '^NY STATE' } },
-    { description: { $regex: 'NYSTTAXRFD' } }
-  ]
-}
-
-const c = {
-  $and: [
-    { description: { $regex: 'Bel Air II', $options: 'im' } },
-    { typeOrig: 'BILLPAY' }
-  ]
-}
-
-
-// delete [none]
 const deleteAction = async r => {
-  const { criteria } = r
+  const { criteria, expectRows, id } = r
 
   const filter = filterBuilder(criteria)
-  
-  const f = await wrappedFind(filter)
-  green('delete - documents returned', f.length)
 
-  // const dm = await deleteMany(DATA_COLLECTION_NAME, filter, {}, { locale: 'en', strength: 2 })
+  // tmp
+  const f = await wrappedFind(filter)
+  printResult('deleteAction', id, expectRows, f.length)
+  // tmp
+
+  const dm = await deleteMany(
+    DATA_COLLECTION_NAME,
+    filter,
+    {},
+    { locale: 'en', strength: 2 }
+  )
   // greenf(`Deleted ${dm.deletedCount} documents`)
   // greenf(`    filter: ${filter}`)
+
+  // test
 }
 
-// strip  [none]
 const stripAction = async r => {
-  
-  const { criteria, expectRows } = r
-  const f = await wrappedFind(filterBuilder(criteria))
-  // green('f', f)
-  expectRows === f.length
-    ? greenf(`OK: expected: ${expectRows}, actual: ${f.length}`)
-    : redf(`ERROR: expected: ${expectRows}, actual: ${f.length}`)
-  green('f.length', f.length)
+  const { action, criteria, expectRows, id } = r
 
+  const filter = filterBuilder(criteria)
+  green('filter', filter)
+  // tmp code
+  const f = await wrappedFind(filter)
+  printResult('stripAction', id, expectRows, f.length)
+  // tmp code
+
+  // // If action.actionValue is undefined set to ''
+  // const { replaceValue actionValue: tmpActionValue, numAdditionalChars: tmpAdditionalChars } = action
+  // const actionValue = tmpActionValue || ''
+  // // Same for numAdditionalChars
+  // const numAdditionalChars = tmpAdditionalChars || 0
+
+  const { replaceValue, replaceWith, numAdditionalChars } = action
+  // green('numAdditionalChars', numAdditionalChars)
+  // if ((criteria.value = 'CHECK #')) {
+  // indexOf
+  // match (regex)
+  // replace looks good for replacing :)
+  // search (regex)
+  // subString (start/end)
+
+  // CHECK # 2441      ESSEX PORTFOLIO  CHECKPAYMT        ARC ID: 4770369575
+  // For more information, see Chapter 3.4.5.1
+  f.forEach(async doc => {
+    // green('criteria', criteria)
+    const regExAsString =
+      numAdditionalChars > 0
+        ? `(${replaceValue}).{${numAdditionalChars}}`
+        : `(${replaceValue})`
+
+    const desc = doc.description
+    const reg = new RegExp(regExAsString)
+    // console.log('reg', reg)
+    const z = desc.replace(reg, replaceWith)
+    console.log('z', `'${z}'`)
+    console.log('i', doc._id)
+    const ret = await findOneAndUpdate(DATA_COLLECTION_NAME, { _id: doc._id }, { description: z })
+    green('ret', ret)
+  })
 }
 
-// categorize category1, [category2]
 const categorizeAction = async r => {
-  
+  const { criteria, expectRows, id } = r
+  const filter = filterBuilder(criteria)
+  const f = await wrappedFind(filter)
+  printResult('categorizeAction', id, expectRows, f.length)
 }
 
 const main = async () => {
-  await loadData()
-  // return
+  await loadData(true)
   const rules = await readRules()
 
-  // keep
-  // green('rules.rules[0]', rules.rules[0])
-  // renameAction(rules.rules[0])
-  // keep
-
-  // rename action-value
-  // delete [none]
-  // strip  [none]
-  // categorize category1, [category2]
-
   rules.rules.forEach(r => {
-    switch (r.action) {
-      case 'rename':
-        // renameAction(r)
-        break
-      case 'delete':
-        // deleteAction(r)
-        break
-      case 'strip':
-        stripAction(r)
-        break
-      case 'categorize':
-        // categorizeAction(r)
-        break
-      default:
-        redf('ERROR', `unknown action ${r.action}`)
+    if (r.id === 5) {
+      switch (r.action.action) {
+        case 'rename':
+          renameAction(r)
+          break
+        case 'delete':
+          deleteAction(r)
+          break
+        case 'strip':
+          stripAction(r)
+          break
+        case 'categorize':
+          categorizeAction(r)
+          break
+        default:
+          redf('ERROR', `unknown action ${r.action}`)
+      }
     }
   })
 }

@@ -2,7 +2,7 @@ import { createIndex, dropCollection, insertMany } from './db'
 import csv from 'csvtojson'
 import { DATA_COLLECTION_NAME } from 'db/constants'
 // eslint-disable-next-line
-import { green, greenf, redf } from 'logger'
+import { green, greenf, redf, yellow } from 'logger'
 
 const readChaseChecking = async () => {
   const json = await csv({
@@ -18,10 +18,10 @@ const transformChaseChk = data => {
   return data.map(r => {
     return {
       date: new Date(r['Posting Date']).toISOString(),
-      description: r.Description,
+      description: r.Description.replace(/\s{2,}/g, ' '),
       debit: r.Amount <= 0 ? r.Amount : null,
       credit: r.Amount <= 0 ? null : r.Amount,
-      typeOrig: r.Type
+      typeOrig: r.Type.toLowerCase()
     }
   })
 }
@@ -29,13 +29,14 @@ const transformChaseChk = data => {
 const loadData = async (loadRaw = false) => {
   console.log('*')
   console.log('*')
-  console.log('*')
-  console.log('*')
   green('****** New run ******')
+  console.log('*')
+  console.log('*')
   await dropCollection(DATA_COLLECTION_NAME)
 
   const chaseJSON = await readChaseChecking()
   const newChaseJSON = await transformChaseChk(chaseJSON)
+
   await insertMany(DATA_COLLECTION_NAME, newChaseJSON)
   // { collation: { caseLevel: true, locale: 'en_US' } }
   await createIndex(DATA_COLLECTION_NAME, 'description', {

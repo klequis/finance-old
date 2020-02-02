@@ -3,7 +3,7 @@ import { removeIdProp, hasProp } from 'lib'
 import config from 'config'
 import { mergeRight, isEmpty } from 'ramda'
 // eslint-disable-next-line
-import { green } from 'logger'
+import { green, yellow } from 'logger'
 
 const MongoClient = mongodb.MongoClient
 
@@ -118,15 +118,17 @@ export const find = async (
   projection = {},
   collation = {}
 ) => {
-  const f = idStringToObjectID(filter)
   try {
     const { db } = await connectDB()
-    return await db
+    const ret = await db
       .collection(collection)
-      .find(f)
+      .find(filter)
       .project(projection)
       .collation(collation)
       .toArray()
+    // yellow('ret', ret)
+    // yellow('ret.length', ret.length)
+    return ret
   } catch (e) {
     throw new Error(e.message)
   }
@@ -225,14 +227,16 @@ export const findOneAndUpdate = async (
   returnOriginal = false
 ) => {
   try {
-    const f = idStringToObjectID(filter)
+    yellow('filter', filter)
+    yellow('update', update)
+    // const f = idStringToObjectID(filter)
 
     // if the update has the _id prop, remove it
-    const u = removeIdProp(update)
+    // const u = removeIdProp(update)
     const { db } = await connectDB()
     const r = await db
       .collection(collection)
-      .findOneAndUpdate(f, { $set: u }, { returnOriginal: returnOriginal })
+      .findOneAndUpdate(filter, { $set: update }, { returnOriginal: returnOriginal })
     return [r.value]
   } catch (e) {
     throw new Error(e.message)
