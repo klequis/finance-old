@@ -1,6 +1,7 @@
 import { createIndex, dropCollection, insertMany } from './db'
 import csv from 'csvtojson'
 import { DATA_COLLECTION_NAME } from 'db/constants'
+import { mergeRight, merge } from 'ramda'
 // eslint-disable-next-line
 import { green, greenf, redf, yellow } from 'logger'
 
@@ -16,13 +17,26 @@ const readChaseChecking = async () => {
 
 const transformChaseChk = data => {
   return data.map(r => {
-    return {
+    // yellow('check #', typeof r['Check or Slip #'])
+    const checkNumber = typeof r['Check or Slip #'] === 'number'
+      ? r['Check or Slip #']
+      : null
+    // console.log('checkNumber', checkNumber)
+    const a = {
       date: new Date(r['Posting Date']).toISOString(),
       description: r.Description.replace(/\s{2,}/g, ' '),
       debit: r.Amount <= 0 ? r.Amount : null,
       credit: r.Amount <= 0 ? null : r.Amount,
       typeOrig: r.Type.toLowerCase()
     }
+    const b = checkNumber !== null ? { checkNumber } : {}
+    
+    const c = mergeRight(a, b)
+    if (checkNumber !== null) { 
+      console.log('checkNumber', checkNumber) 
+      console.log('c', c)
+    }
+    return c
   })
 }
 

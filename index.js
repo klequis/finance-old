@@ -173,7 +173,7 @@ const main = async () => {
   const rules = await readRules()
 
   rules.rules.forEach(r => {
-    if (r.id === 5) {
+    if ([5, 18].includes(r.id)) {
       switch (r.action.action) {
         case 'rename':
           renameAction(r)

@@ -289,6 +289,24 @@
         "action": "categorize",
         "category1": "aum"   
       }
+    },
+    {
+      "id": 18,
+      "expectRows": 0,
+      "compassQuery": "{ description: { $regex: '^CHECK #', $options: 'im' } }",
+      "criteria": [
+        {
+          "field": "description",
+          "operation": "contains",
+          "value": " ARC ID: "
+        }
+      ],
+      "action": {
+        "action": "strip",
+        "replaceValue": " ARC ID: ",
+        "replaceWith": "",
+        "numAdditionalChars": 10
+      }
     }
   ]
 }
