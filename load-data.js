@@ -17,11 +17,9 @@ const readChaseChecking = async () => {
 
 const transformChaseChk = data => {
   return data.map(r => {
-    // yellow('check #', typeof r['Check or Slip #'])
     const checkNumber = typeof r['Check or Slip #'] === 'number'
       ? r['Check or Slip #']
       : null
-    // console.log('checkNumber', checkNumber)
     const a = {
       date: new Date(r['Posting Date']).toISOString(),
       description: r.Description.replace(/\s{2,}/g, ' '),
@@ -30,13 +28,7 @@ const transformChaseChk = data => {
       typeOrig: r.Type.toLowerCase()
     }
     const b = checkNumber !== null ? { checkNumber } : {}
-    
-    const c = mergeRight(a, b)
-    if (checkNumber !== null) { 
-      console.log('checkNumber', checkNumber) 
-      console.log('c', c)
-    }
-    return c
+    return mergeRight(a, b)
   })
 }
 
@@ -46,6 +38,7 @@ const loadData = async (loadRaw = false) => {
   green('****** New run ******')
   console.log('*')
   console.log('*')
+  
   await dropCollection(DATA_COLLECTION_NAME)
 
   const chaseJSON = await readChaseChecking()
@@ -62,6 +55,12 @@ const loadData = async (loadRaw = false) => {
   if (loadRaw) {
     await dropCollection('data-all')
     await insertMany('data-all', newChaseJSON)
+    await createIndex('data-all', 'description', {
+      collation: { caseLevel: true, locale: 'en_US' }
+    })
+    await createIndex('data-all', 'typeOrig', {
+      collation: { caseLevel: true, locale: 'en_US' }
+    })
   }
 }
 

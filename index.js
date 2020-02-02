@@ -4,7 +4,7 @@ import { DATA_COLLECTION_NAME } from 'db/constants'
 import { mergeAll } from 'ramda'
 import loadData from './load-data'
 // eslint-disable-next-line
-import { green, greenf, redf, yellow } from 'logger'
+import { blue, green, greenf, redf, yellow } from 'logger'
 
 const readRules = async () => {
   const rules = await fs.promises.readFile('rules.json')
@@ -118,33 +118,16 @@ const deleteAction = async r => {
 
 const stripAction = async r => {
   const { action, criteria, expectRows, id } = r
-
   const filter = filterBuilder(criteria)
-  green('filter', filter)
-  // tmp code
   const f = await wrappedFind(filter)
-  printResult('stripAction', id, expectRows, f.length)
+
+  const changes = []
   // tmp code
-
-  // // If action.actionValue is undefined set to ''
-  // const { replaceValue actionValue: tmpActionValue, numAdditionalChars: tmpAdditionalChars } = action
-  // const actionValue = tmpActionValue || ''
-  // // Same for numAdditionalChars
-  // const numAdditionalChars = tmpAdditionalChars || 0
-
+  // printResult('stripAction', id, expectRows, f.length)
+  // tmp code
   const { replaceValue, replaceWith, numAdditionalChars } = action
-  // green('numAdditionalChars', numAdditionalChars)
-  // if ((criteria.value = 'CHECK #')) {
-  // indexOf
-  // match (regex)
-  // replace looks good for replacing :)
-  // search (regex)
-  // subString (start/end)
-
-  // CHECK # 2441      ESSEX PORTFOLIO  CHECKPAYMT        ARC ID: 4770369575
-  // For more information, see Chapter 3.4.5.1
-  f.forEach(async doc => {
-    // green('criteria', criteria)
+  for (let i; i < f.length; i++) {
+    const doc = f[i]
     const regExAsString =
       numAdditionalChars > 0
         ? `(${replaceValue}).{${numAdditionalChars}}`
@@ -152,13 +135,20 @@ const stripAction = async r => {
 
     const desc = doc.description
     const reg = new RegExp(regExAsString)
-    // console.log('reg', reg)
-    const z = desc.replace(reg, replaceWith)
-    console.log('z', `'${z}'`)
-    console.log('i', doc._id)
-    const ret = await findOneAndUpdate(DATA_COLLECTION_NAME, { _id: doc._id }, { description: z })
-    green('ret', ret)
-  })
+    const newDesc = desc.replace(reg, replaceWith)
+    const ret = await findOneAndUpdate(
+      DATA_COLLECTION_NAME,
+      { _id: doc._id },
+      { description: newDesc }
+    )
+    const change = { original: desc, new: ret[0].description }
+    yellow('change', change)
+    changes.push(change)
+
+    green(`${id}: returned desc: `, ret[0].description)
+  }
+  // yellow('stripAction: changes', changes)
+  return changes
 }
 
 const categorizeAction = async r => {
@@ -168,30 +158,60 @@ const categorizeAction = async r => {
   printResult('categorizeAction', id, expectRows, f.length)
 }
 
+const runRule = async r => {
+  switch (r.action.action) {
+    case 'rename':
+      return renameAction(r)
+    case 'delete':
+      return deleteAction(r)
+    case 'strip':
+      // const a = await stripAction(r)
+      // console.log('a', a)
+      return await stripAction(r)
+    case 'categorize':
+      return categorizeAction(r)
+    default:
+      redf('ERROR', `unknown action ${r.action}`)
+  }
+}
+
 const main = async () => {
   await loadData(true)
-  const rules = await readRules()
-
-  rules.rules.forEach(r => {
+  const { rules } = await readRules()
+  // green('rules', rules)
+  // green('rules.length', rules.rules.length)
+  for (let i = 0; i < rules.length; i++) {
+    const r = rules[i]
+    // console.log('r', r)
     if ([5, 18].includes(r.id)) {
-      switch (r.action.action) {
-        case 'rename':
-          renameAction(r)
-          break
-        case 'delete':
-          deleteAction(r)
-          break
-        case 'strip':
-          stripAction(r)
-          break
-        case 'categorize':
-          categorizeAction(r)
-          break
-        default:
-          redf('ERROR', `unknown action ${r.action}`)
-      }
+      blue(`start rule ${r.id}`)
+      const change = await runRule(r)
+      blue(`end rule ${r.id}`)
+      yellow('main: change', change)
     }
-  })
+  }
+  // rules.rules.forEach(async r => {
+  //   if ([5, 18].includes(r.id)) {
+  //     await runRule(r)
+  //   }
+  //   // if ([5, 18].includes(r.id)) {
+  //   //   const before = await find(DATA_COLLECTION_NAME, { description: { $regex: '^CHECK #' }})
+  //   //   green(`Running: ${r.id}`)
+  //   //   green(`Before:`, before)
+  //   // }
+
+  //   // if ([5, 18].includes(r.id)) {
+  //   //   const after = await find(DATA_COLLECTION_NAME, { description: { $regex: '^CHECK #' }})
+  //   //   green(`after ${r.id}:`, after)
+  //   // }
+  // })
 }
 
 main()
+
+/*
+  - get all the data
+  - run the rules
+  - replace all the data
+
+*/

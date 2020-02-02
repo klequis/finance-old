@@ -227,8 +227,8 @@ export const findOneAndUpdate = async (
   returnOriginal = false
 ) => {
   try {
-    yellow('filter', filter)
-    yellow('update', update)
+    // yellow('filter', filter)
+    // yellow('update', update)
     // const f = idStringToObjectID(filter)
 
     // if the update has the _id prop, remove it
@@ -237,6 +237,7 @@ export const findOneAndUpdate = async (
     const r = await db
       .collection(collection)
       .findOneAndUpdate(filter, { $set: update }, { returnOriginal: returnOriginal })
+    // yellow('[r.value]', [r.value])
     return [r.value]
   } catch (e) {
     throw new Error(e.message)
