@@ -77,119 +77,83 @@ const printResult = (fName, id, expectRows, actualRows) => {
     : redf(`ERROR: id: ${id}, expected: ${expectRows}, actual: ${actualRows}`)
 }
 
-const renameAction = async r => {
-  const { criteria, expectRows, id, action } = r
-  const { actionValue: to } = action
-  const filter = filterBuilder(criteria)
 
-  // tmp code
-  const f = await wrappedFind(filter)
-  printResult('renameAction', id, expectRows, f.length)
-  // tmp code
 
-  const um = await updateMany(DATA_COLLECTION_NAME, filter, { description: to })
 
-  // greenf(`Renamed ${um.modifiedCount} documents`)
-  // greenf('    from: ', from)
-  // greenf('    to: ', to)
-}
 
-const deleteAction = async r => {
-  const { criteria, expectRows, id } = r
-
-  const filter = filterBuilder(criteria)
-
-  // tmp
-  const f = await wrappedFind(filter)
-  printResult('deleteAction', id, expectRows, f.length)
-  // tmp
-
-  const dm = await deleteMany(
-    DATA_COLLECTION_NAME,
-    filter,
-    {},
-    { locale: 'en', strength: 2 }
-  )
-  // greenf(`Deleted ${dm.deletedCount} documents`)
-  // greenf(`    filter: ${filter}`)
-
-  // test
-}
-
-const stripAction = async r => {
-  const { action, criteria, expectRows, id } = r
-  const filter = filterBuilder(criteria)
-  const f = await wrappedFind(filter)
-
-  const changes = []
-  // tmp code
-  // printResult('stripAction', id, expectRows, f.length)
-  // tmp code
-  const { replaceValue, replaceWith, numAdditionalChars } = action
-  for (let i; i < f.length; i++) {
-    const doc = f[i]
-    const regExAsString =
-      numAdditionalChars > 0
-        ? `(${replaceValue}).{${numAdditionalChars}}`
-        : `(${replaceValue})`
-
-    const desc = doc.description
-    const reg = new RegExp(regExAsString)
-    const newDesc = desc.replace(reg, replaceWith)
-    const ret = await findOneAndUpdate(
-      DATA_COLLECTION_NAME,
-      { _id: doc._id },
-      { description: newDesc }
-    )
-    const change = { original: desc, new: ret[0].description }
-    yellow('change', change)
-    changes.push(change)
-
-    green(`${id}: returned desc: `, ret[0].description)
+const makeRegEx = criteria => {
+  // operation: [beginsWith || contains]
+  const { operation, value } = criteria
+  let regEx
+  if (operation === 'beginsWith') {
+    regEx = new RegExp(`^${value}`)
   }
-  // yellow('stripAction: changes', changes)
-  return changes
+  if (operation === 'contains') {
+    regEx = new RegExp(`${value}`)
+  }
+  return regEx
 }
 
-const categorizeAction = async r => {
-  const { criteria, expectRows, id } = r
-  const filter = filterBuilder(criteria)
-  const f = await wrappedFind(filter)
-  printResult('categorizeAction', id, expectRows, f.length)
+const andCondition = (criteria, doc) => {
+  return criteria.every(c => {
+    const { field } = c
+    const regEx = makeRegEx(c)
+    return doc[field].match(regEx)
+  })
 }
 
-const runRule = async r => {
-  switch (r.action.action) {
-    case 'rename':
-      return renameAction(r)
+
+
+
+
+const runRule = (rule, doc) => {
+  // yellow('runRule')
+  const { action } = rule.action
+  switch (action) {
+    case 'replace':
+      return replaceAction(rule, doc)
     case 'delete':
-      return deleteAction(r)
+      return deleteAction(rule, doc)
     case 'strip':
       // const a = await stripAction(r)
       // console.log('a', a)
-      return await stripAction(r)
+      return stripAction(rule, doc)
     case 'categorize':
-      return categorizeAction(r)
+      return categorizeAction(rule, doc)
     default:
-      redf('ERROR', `unknown action ${r.action}`)
+      redf('ERROR', `unknown action ${rule.action}`)
   }
 }
 
 const main = async () => {
   await loadData(true)
+  const data = await find(DATA_COLLECTION_NAME, {})
   const { rules } = await readRules()
+  // console.log('data', typeof data)
+  data.forEach(doc => {
+    
+    rules.forEach(rule => {
+      // yellow('doc.id', doc.id)
+      // yellow('doc', doc)
+      if ([5, 18].includes(rule.id)) {
+        // yellow('rule', rule)
+        runRule(rule, doc)
+      }
+    })
+  })
   // green('rules', rules)
   // green('rules.length', rules.rules.length)
-  for (let i = 0; i < rules.length; i++) {
-    const r = rules[i]
-    // console.log('r', r)
-    if ([5, 18].includes(r.id)) {
-      blue(`start rule ${r.id}`)
-      const change = await runRule(r)
-      blue(`end rule ${r.id}`)
-      yellow('main: change', change)
-    }
-  }
+
+  // for (let i = 0; i < rules.length; i++) {
+  //   const r = rules[i]
+  //   // console.log('r', r)
+  //   if ([5, 18].includes(r.id)) {
+  //     blue(`start rule ${r.id}`)
+  //     const change = await runRule(r)
+  //     blue(`end rule ${r.id}`)
+  //     yellow('main: change', change)
+  //   }
+  // }
   // rules.rules.forEach(async r => {
   //   if ([5, 18].includes(r.id)) {
   //     await runRule(r)

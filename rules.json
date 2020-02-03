@@ -1,6 +1,23 @@
 {
   "rules": [
     {
+      "id": 99,
+      "expectRows": 0,
+      "compassQuery": "",
+      "criteria": [
+        {
+          "field": "description",
+          "operation": "beginsWith",
+          "value": "ATM CHECK DEPOSIT"
+        }
+      ],
+      "action": {
+        "action": "truncate",
+        "field": "description",
+        "findValue": "ATM CHECK DEPOSIT"
+      }
+    },
+    {
       "id": 1,
       "expectRows": 11,
       "compassQuery": "{ description: { $regex: '^MORGAN STANLEY', $options: 'im' } }",
@@ -11,53 +28,6 @@
           "value": "Morgan Stanley"
         },
         { "field": "typeOrig", "operation": "equals", "value": "ACH_CREDIT" }
-      ],
-      "action": {
-        "action": "delete"
-      }
-    },
-    {
-      "id": 2,
-      "expectRows": 1,
-      "compassQuery": "{ description: { $regex: '^ATM CHECK DEPOSIT', $options: 'im' } }",
-      "criteria": [
-        {
-          "field": "description",
-          "operation": "beginsWith",
-          "value": "ATM CHECK DEPOSIT"
-        }
-      ],
-      "action": {
-        "action": "rename",
-        "actionValue": "ATM CHECK DEPOSIT"
-      }
-    },
-    {
-      "id": 3,
-      "expectRows": 5,
-      "compassQuery": "{ description: { $regex: '^ATM WITHDRAWAL', $options: 'im' } }",
-      "criteria": [
-        {
-          "field": "description",
-          "operation": "beginsWith",
-          "value": "ATM WITHDRAWAL"
-        }
-      ],
-      "action": {
-        "action": "rename",
-        "actionValue": "ATM WITHDRAWAL"
-      }
-    },
-    {
-      "id": 4,
-      "expectRows": 24,
-      "compassQuery": "{ description: { $regex: '^CHASE CREDIT CRD AUTOPAY', $options: 'im' } }",
-      "criteria": [
-        {
-          "field": "description",
-          "operation": "beginsWith",
-          "value": "CHASE CREDIT CRD AUTOPAY"
-        }
       ],
       "action": {
         "action": "delete"
@@ -76,11 +46,66 @@
       ],
       "action": {
         "action": "strip",
-        "replaceValue": "CHECK #",
-        "replaceWith": "",
+        "field": "description",
+        "findValue": "CHECK #",
         "numAdditionalChars": 6
       }
     },
+
+
+
+
+
+    {
+      "id": 2,
+      "expectRows": 1,
+      "compassQuery": "{ description: { $regex: '^ATM CHECK DEPOSIT', $options: 'im' } }",
+      "criteria": [
+        {
+          "field": "description",
+          "operation": "beginsWith",
+          "value": "ATM CHECK DEPOSIT"
+        }
+      ],
+      "action": {
+        "action": "replaceAll",
+        "field": "description",
+        "replaceWithValue": "ATM CHECK DEPOSIT"
+      }
+    },
+    {
+      "id": 3,
+      "expectRows": 5,
+      "compassQuery": "{ description: { $regex: '^ATM WITHDRAWAL', $options: 'im' } }",
+      "criteria": [
+        {
+          "field": "description",
+          "operation": "beginsWith",
+          "value": "ATM WITHDRAWAL"
+        }
+      ],
+      "action": {
+        "action": "replace",
+        "field": "description",
+        "actionValue": "ATM WITHDRAWAL"
+      }
+    },
+    {
+      "id": 4,
+      "expectRows": 24,
+      "compassQuery": "{ description: { $regex: '^CHASE CREDIT CRD AUTOPAY', $options: 'im' } }",
+      "criteria": [
+        {
+          "field": "description",
+          "operation": "beginsWith",
+          "value": "CHASE CREDIT CRD AUTOPAY"
+        }
+      ],
+      "action": {
+        "action": "delete"
+      }
+    },
+    
     {
       "id": 6,
       "expectRows": 2,
@@ -252,7 +277,8 @@
         }
       ],
       "action": {
-        "action": "strip"  
+        "action": "strip",
+        "field": "description",
       }
       
     },
