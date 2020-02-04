@@ -1,41 +1,72 @@
 {
   "rules": [
     {
-      "id": 99,
-      "expectRows": 0,
-      "compassQuery": "",
+      "id": 1,
+      "numExpectedDocs": 7,
+      "compassQuery": "{ description: { $regex: '^Morgan Stanley ACH CREDIT PPD ID:', $options: 'im' } }",
       "criteria": [
         {
           "field": "description",
           "operation": "beginsWith",
-          "value": "ATM CHECK DEPOSIT"
-        }
+          "value": "Morgan Stanley ACH CREDIT PPD ID:"
+        },
+        { "field": "typeOrig", "operation": "equals", "value": "ach_credit" }
       ],
       "action": {
-        "action": "truncate",
-        "field": "description",
-        "findValue": "ATM CHECK DEPOSIT"
+        "action": "omit"
       }
     },
     {
-      "id": 1,
-      "expectRows": 11,
-      "compassQuery": "{ description: { $regex: '^MORGAN STANLEY', $options: 'im' } }",
+      "id": 2,
+      "numExpectedDocs": 24,
+      "compassQuery": "{ description: { $regex: '^CHASE CREDIT CRD AUTOPAY', $options: 'im' } }",
       "criteria": [
         {
           "field": "description",
           "operation": "beginsWith",
-          "value": "Morgan Stanley"
-        },
-        { "field": "typeOrig", "operation": "equals", "value": "ACH_CREDIT" }
+          "value": "CHASE CREDIT CRD AUTOPAY"
+        }
       ],
       "action": {
-        "action": "delete"
+        "action": "omit"
+      }
+    },
+    {
+      "id": 3,
+      "numExpectedDocs": 13,
+      "compassQuery": "{ description: { $regex: '^CITI CARD ONLINE PAYMENT', $options: 'im' } }",
+      "criteria": [
+        {
+          "field": "description",
+          "operation": "beginsWith",
+          "value": "CITI CARD ONLINE PAYMENT"
+        }
+      ],
+      "action": {
+        "action": "omit"
+      }
+    },
+    {
+      "id": 4,
+      "numExpectedDocs": 78,
+      "compassQuery": "{ description: { $regex: 'PPD ID:', $options: 'im' } }",
+      "criteria": [
+        {
+          "field": "description",
+          "operation": "contains",
+          "value": "PPD ID:"
+        }
+      ],
+      "action": {
+        "action": "strip",
+        "field": "description",
+        "findValue": "PPD ID:",
+        "numAdditionalChars": 11
       }
     },
     {
       "id": 5,
-      "expectRows": 3,
+      "numExpectedDocs": 3,
       "compassQuery": "{ description: { $regex: '^CHECK #', $options: 'im' } }",
       "criteria": [
         {
@@ -51,14 +82,46 @@
         "numAdditionalChars": 6
       }
     },
-
-
-
-
+    {
+      "id": 6,
+      "numExpectedDocs": 51,
+      "compassQuery": "{ description: { $regex: '^Online Payment', $options: 'im' } }",
+      "criteria": [
+        {
+          "field": "description",
+          "operation": "beginsWith",
+          "value": "Online Payment"
+        }
+      ],
+      "action": {
+        "action": "strip",
+        "field": "description",
+        "findValue": "Online Payment",
+        "numAdditionalChars": 15
+      }
+    },
 
     {
-      "id": 2,
-      "expectRows": 1,
+      "id": 7,
+      "numExpectedDocs": 3,
+      "compassQuery": "{ description: { $regex: '^CHECK #', $options: 'im' } }",
+      "criteria": [
+        {
+          "field": "description",
+          "operation": "contains",
+          "value": " ARC ID: "
+        }
+      ],
+      "action": {
+        "action": "strip",
+        "field": "description",
+        "findValue": "ARC ID: ",
+        "numAdditionalChars": 10
+      }
+    },
+    {
+      "id": 8,
+      "numExpectedDocs": 1,
       "compassQuery": "{ description: { $regex: '^ATM CHECK DEPOSIT', $options: 'im' } }",
       "criteria": [
         {
@@ -74,8 +137,8 @@
       }
     },
     {
-      "id": 3,
-      "expectRows": 5,
+      "id": 9,
+      "numExpectedDocs": 5,
       "compassQuery": "{ description: { $regex: '^ATM WITHDRAWAL', $options: 'im' } }",
       "criteria": [
         {
@@ -85,30 +148,15 @@
         }
       ],
       "action": {
-        "action": "replace",
+        "action": "replaceAll",
         "field": "description",
-        "actionValue": "ATM WITHDRAWAL"
+        "replaceWithValue": "ATM WITHDRAWAL"
       }
     },
+
     {
-      "id": 4,
-      "expectRows": 24,
-      "compassQuery": "{ description: { $regex: '^CHASE CREDIT CRD AUTOPAY', $options: 'im' } }",
-      "criteria": [
-        {
-          "field": "description",
-          "operation": "beginsWith",
-          "value": "CHASE CREDIT CRD AUTOPAY"
-        }
-      ],
-      "action": {
-        "action": "delete"
-      }
-    },
-    
-    {
-      "id": 6,
-      "expectRows": 2,
+      "id": 10,
+      "numExpectedDocs": 2,
       "compassQuery": "{ description: { $regex: 'chevron', $options: 'im' } }",
       "criteria": [
         { "field": "description", "operation": "contains", "value": "chevron" }
@@ -119,24 +167,10 @@
         "category2": "gasoline"
       }
     },
+
     {
-      "id": 7,
-      "expectRows": 13,
-      "compassQuery": "{ description: { $regex: '^CITI CARD ONLINE PAYMENT', $options: 'im' } }",
-      "criteria": [
-        {
-          "field": "description",
-          "operation": "beginsWith",
-          "value": "CITI CARD ONLINE PAYMENT"
-        }
-      ],
-      "action": {
-        "action": "delete"
-      }
-    },
-    {
-      "id": 8,
-      "expectRows": 3,
+      "id": 11,
+      "numExpectedDocs": 3,
       "compassQuery": "{ description: { $regex: '^Essex Property T RENTAL', $options: 'im' } }",
       "criteria": [
         {
@@ -150,11 +184,10 @@
         "category1": "utilities",
         "category2": "aum"
       }
-      
     },
     {
-      "id": 9,
-      "expectRows": 1,
+      "id": 12,
+      "numExpectedDocs": 1,
       "compassQuery": "{ description: { $regex: '^FRANCHISE TAX', $options: 'im' } }",
       "criteria": [
         {
@@ -171,14 +204,14 @@
       }
     },
     {
-      "id": 10,
-      "expectRows": 12,
-      "compassQuery": "{ description: { $regex: '^HUMANA,  INC', $options: 'im' } }",
+      "id": 13,
+      "numExpectedDocs": 12,
+      "compassQuery": "{ description: { $regex: '^HUMANA, INC', $options: 'im' } }",
       "criteria": [
         {
           "field": "description",
           "operation": "beginsWith",
-          "value": "HUMANA,  INC"
+          "value": "HUMANA, INC"
         }
       ],
       "action": {
@@ -188,8 +221,8 @@
       }
     },
     {
-      "id": 11,
-      "expectRows": 13,
+      "id": 14,
+      "numExpectedDocs": 13,
       "compassQuery": "{ description: { $regex: '^INTEREST PAYMENT', $options: 'im' } }",
       "criteria": [
         {
@@ -203,30 +236,28 @@
         "category1": "income",
         "category2": "interest"
       }
-      
     },
     {
-      "id": 12,
-      "expectRows": 1,
-      "compassQuery": "{ description: { $regex: '^IRS  TREAS', $options: 'im' } }",
+      "id": 15,
+      "numExpectedDocs": 1,
+      "compassQuery": "{ description: { $regex: '^IRS TREAS', $options: 'im' } }",
       "criteria": [
         {
           "field": "description",
           "operation": "beginsWith",
-          "value": "IRS  TREAS"
+          "value": "IRS TREAS"
         }
       ],
       "action": {
         "action": "categorize",
         "category1": "tax",
-        "category2": "refund"  
+        "category2": "refund"
       }
-      
     },
 
     {
-      "id": 13,
-      "expectRows": 4,
+      "id": 16,
+      "numExpectedDocs": 4,
       "compassQuery": "{ description: { $regex: '^MORGAN STANLEY & DIR DEP', $options: 'im' } }",
       "criteria": [
         {
@@ -238,13 +269,12 @@
       "action": {
         "action": "categorize",
         "category1": "income",
-        "category2": "morgan-stanley"  
+        "category2": "morgan-stanley"
       }
-      
     },
     {
-      "id": 14,
-      "expectRows": 1,
+      "id": 17,
+      "numExpectedDocs": 1,
       "compassQuery": "{ $and: [ { description: { $regex: '^NY STATE' } },  { description: { $regex: 'NYSTTAXRFD' } }] }",
       "criteria": [
         {
@@ -261,47 +291,30 @@
       "action": {
         "action": "categorize",
         "category1": "tax",
-        "category2": "refund"  
+        "category2": "refund"
       }
-      
     },
+
     {
-      "id": 15,
-      "expectRows": 65,
-      "compassQuery": "{ description: { $regex: '^Online Payment', $options: 'im' } }",
-      "criteria": [
-        {
-          "field": "description",
-          "operation": "contains",
-          "value": "Online Payment"
-        }
-      ],
-      "action": {
-        "action": "strip",
-        "field": "description",
-      }
-      
-    },
-    {
-      "id": 16,
-      "expectRows": 14,
-      "compassQuery": "{ $and: [ { description: { $regex: 'Bel Air II' } },  { typeOrig: { $eq: 'BILLPAY' } }] }",
+      "id": 18,
+      "numExpectedDocs": 14,
+      "compassQuery": "{ $and: [ { description: { $regex: 'Bel Air II' } },  { typeOrig: { $eq: 'billpay' } }] }",
       "criteria": [
         {
           "field": "description",
           "operation": "contains",
           "value": "Bel Air II"
         },
-        { "field": "typeOrig", "operation": "equals", "value": "BILLPAY" }
+        { "field": "typeOrig", "operation": "equals", "value": "billpay" }
       ],
       "action": {
         "action": "categorize",
-        "category1": "rent"  
+        "category1": "rent"
       }
     },
     {
-      "id": 17,
-      "expectRows": 8,
+      "id": 19,
+      "numExpectedDocs": 8,
       "compassQuery": "{ $and: [ { description: { $regex: 'Bel Air Apts - Phase II' } },  { typeOrig: { $eq: 'BILLPAY' } }] }",
       "criteria": [
         {
@@ -309,29 +322,29 @@
           "operation": "contains",
           "value": "Bel Air Apts - Phase II"
         },
-        { "field": "typeOrig", "operation": "equals", "value": "BILLPAY" }
+        { "field": "typeOrig", "operation": "equals", "value": "billpay" }
       ],
       "action": {
         "action": "categorize",
-        "category1": "aum"   
+        "category1": "aum"
       }
     },
+
     {
-      "id": 18,
-      "expectRows": 0,
-      "compassQuery": "{ description: { $regex: '^CHECK #', $options: 'im' } }",
+      "id": 20,
+      "numExpectedDocs": 0,
+      "compassQuery": "",
       "criteria": [
         {
           "field": "description",
-          "operation": "contains",
-          "value": " ARC ID: "
+          "operation": "beginsWith",
+          "value": "ATM CHECK DEPOSIT"
         }
       ],
       "action": {
-        "action": "strip",
-        "replaceValue": " ARC ID: ",
-        "replaceWith": "",
-        "numAdditionalChars": 10
+        "action": "truncate",
+        "field": "description",
+        "findValue": "ATM CHECK DEPOSIT"
       }
     }
   ]

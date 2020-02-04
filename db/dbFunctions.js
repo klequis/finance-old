@@ -1,7 +1,7 @@
 import mongodb, { ObjectID } from 'mongodb'
 import { removeIdProp, hasProp } from 'lib'
 import config from 'config'
-import { mergeRight, isEmpty } from 'ramda'
+import { mergeRight, isEmpty, keys } from 'ramda'
 // eslint-disable-next-line
 import { green, yellow } from 'logger'
 
@@ -202,10 +202,9 @@ export const deleteMany = async (collection, filter) => {
   // green('deleteMany: filter', filter)
   try {
     const { db } = await connectDB()
-    green('hi')
     const r = await db.collection(collection).deleteMany(filter)
     green('deleteMany: r.deletedCount', r.deletedCount)
-    return r
+    return r.deletedCount
   } catch (e) {
     throw new Error(e.message)
   }
@@ -229,14 +228,15 @@ export const findOneAndUpdate = async (
   try {
     // yellow('filter', filter)
     // yellow('update', update)
-    // const f = idStringToObjectID(filter)
-
+    const f = hasProp('_id', filter)
+      ? mergeRight(filter, { _id: idStringToObjectID(filter._id) })
+      : filter
     // if the update has the _id prop, remove it
     // const u = removeIdProp(update)
     const { db } = await connectDB()
     const r = await db
       .collection(collection)
-      .findOneAndUpdate(filter, { $set: update }, { returnOriginal: returnOriginal })
+      .findOneAndUpdate(f, { $set: update }, { returnOriginal: returnOriginal })
     // yellow('[r.value]', [r.value])
     return [r.value]
   } catch (e) {
