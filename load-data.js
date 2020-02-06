@@ -20,12 +20,15 @@ const transformChaseChk = data => {
     const checkNumber = typeof r['Check or Slip #'] === 'number'
       ? r['Check or Slip #']
       : null
+    const description = r.Description.replace(/\s{2,}/g, ' ').trim()
     const a = {
       date: new Date(r['Posting Date']).toISOString(),
-      description: r.Description.replace(/\s{2,}/g, ' '),
+      description: description,
+      origDescription: description,
       debit: r.Amount <= 0 ? r.Amount : null,
       credit: r.Amount <= 0 ? null : r.Amount,
-      typeOrig: r.Type.toLowerCase()
+      typeOrig: r.Type.toLowerCase(),
+      omit: false
     }
     const b = checkNumber !== null ? { checkNumber } : {}
     return mergeRight(a, b)

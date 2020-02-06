@@ -1,5 +1,4 @@
 import { find, updateMany, findOneAndUpdate } from 'db'
-// import omitAction from 'actions/omit-action'
 // import categorizeAction from 'actions/categorize-action'
 // import replaceAllAction from 'actions/replace-all-action'
 // import replaceSubstringAction from 'actions/replace-substring-action'
@@ -26,8 +25,6 @@ import { hasProp } from 'lib'
 // eslint-disable-next-line
 import { blue, green, greenf, redf, yellow } from 'logger'
 
-const rulesToRun = [1, 2, 3, 4]
-
 const printFilter = filter => {
   if (hasProp('$and', filter)) {
     const a = filter.$and
@@ -37,93 +34,96 @@ const printFilter = filter => {
   }
 }
 
+const createRegex = (findValue, numAdditionalChars = 0) => {
+  const regExAsString =
+    numAdditionalChars > 0
+      ? `(${findValue}).{${numAdditionalChars}}`
+      : `(${findValue})`
+  return new RegExp(regExAsString)
+}
+
+const rulesToRun = [13]
+
 const main = async () => {
   await loadData(true)
   // const data = await find(DATA_COLLECTION_NAME, {})
 
   const { rules: allRules } = await readRules()
-  const runRules = allRules.filter(r => rulesToRun.includes(r.id))
-  console.log('runRules', runRules)
+  // const runRules = allRules.filter(r => rulesToRun.includes(r.id))
+  // const runRules = allRules.filter(r => rulesToRun.includes(r.id))
+  const runRules = allRules
+  // console.log('runRules', runRules)
 
   // omit rules
   blue('** omit rules **')
-  const omitRules = runRules.filter(rule => rule.action.action === 'omit')
-  for (let i = 0; i < omitRules.length; i++) {
-    const rule = omitRules[i]
+  for (let i = 0; i < runRules.length; i++) {
+    const rule = runRules[i]
     console.log('---')
     console.log(`** id: ${rule.id}`)
-    const { criteria } = rule
-    const filter = filterBuilder(criteria)
-    const f = await find(DATA_COLLECTION_NAME, filter)
-    printFilter(filter)
-    printResult(rule.id, rule.numExpectedDocs, f.length)
-    const set = { omit: true }
-    const udm = await updateMany(DATA_COLLECTION_NAME, filter, set)
-  }
-
-  // strip rules
-  blue('** stripRules** ')
-  const stripRules = runRules.filter(rule => rule.action.action === 'strip')
-
-  for (let i = 0; i < stripRules.length; i++) {
-    const rule = stripRules[i]
-    console.log('---')
-    console.log(`** id: ${rule.id}`)
-    // yellow('rule', rule)
-    const { criteria, action } = rule
+    const { actions, criteria } = rule
     // yellow('criteria', criteria)
     const filter = filterBuilder(criteria)
-    // yellow('filter', filter)
     const f = await find(DATA_COLLECTION_NAME, filter)
-    // yellow('f', f)
-    printResult(rule.id, rule.numExpectedDocs, f.length)
-    const { field, findValue, numAdditionalChars } = action
-    // regExAsString won't work for all criteria yet - modify
-    const regExAsString =
-      numAdditionalChars > 0
-        ? `(${findValue}).{${numAdditionalChars}}`
-        : `(${findValue})`
-    const regex = new RegExp(regExAsString)
-    for (let j = 0; j < f.length; j++) {
-      const doc = f[j]
-      const origFieldValue = doc[field]
-      // yellow('origFieldValue', origFieldValue)
-      const newFieldValue = doc[field].replace(regex, '').trim()
-      // yellow(' newFieldValue', newFieldValue)
-      const foau = await findOneAndUpdate(
-        DATA_COLLECTION_NAME,
-        { _id: doc._id },
-        { [field]: newFieldValue, [`orig${field}`]: origFieldValue }
-      )
-      // yellow('           foau', foau[0].description)
+    // printFilter(filter)
+    // printResult(rule.id, rule.numExpectedDocs, f.length)
+    // yellow(actions)
+    for (let j = 0; j < actions.length; j++) {
+      const action = actions[j]
+      // yellow('action', action)
+      const { findValue, numAdditionalChars } = action
+      const regex = createRegex(findValue, numAdditionalChars)
+      switch (action.action) {
+        case 'omit':
+          await updateMany(DATA_COLLECTION_NAME, filter, { omit: true })
+          break
+        case 'strip':
+          for (let j = 0; j < f.length; j++) {
+            const doc = f[j]
+            const origFieldValue = doc[action.field]
+            const newFieldValue = doc[action.field].replace(regex, '').trim()
+            const foau = await findOneAndUpdate(
+              DATA_COLLECTION_NAME,
+              { _id: doc._id },
+              {
+                [action.field]: newFieldValue,
+                [`orig${action.field}`]: origFieldValue
+              }
+            )
+          }
+          break
+        case 'replaceAll':
+          // const { field, replaceWithValue } = action
+          for (let j = 0; j < f.length; j++) {
+            const doc = f[j]
+            // yellow('old description', doc.description)
+            const foau = await findOneAndUpdate(
+              DATA_COLLECTION_NAME,
+              { _id: doc._id },
+              { [action.field]: action.replaceWithValue }
+            )
+          }
+          break
+        case 'categorize':
+          // const { category1, category2 } = action
+          // You probable don't need to loop here and you didn't (probably) need to do so for replaceRules either
+          // const set = hasProp('category2', action)
+          //   ? { category1, category2 }
+          //   : { category1 }
+          yellow('filter', filter)
+          
+          await updateMany(
+            DATA_COLLECTION_NAME,
+            filter,
+            hasProp('category2', action)
+              ? { category1: action.category1, category2: action.category2 }
+              : { category1: action.category1 }
+          )
+          break
+        default:
+          redf('unknown action type:', action.action)
+      }
     }
   }
-
-  // // replace rules
-  // blue('** replaceAllRules **')
-  // const replaceAllRules = runRules.filter(
-  //   rule => rule.action.action === 'replaceAll'
-  // )
-  // for (let i = 0; i < replaceAllRules.length; i++) {
-  //   const rule = replaceAllRules[i]
-  //   console.log('---')
-  //   console.log(`** id: ${rule.id}`)
-  //   const { criteria, action } = rule
-  //   const filter = filterBuilder(criteria)
-  //   const f = await find(DATA_COLLECTION_NAME, filter)
-  //   printResult(rule.id, rule.numExpectedDocs, f.length)
-  //   const { field, replaceWithValue } = action
-  //   for (let j = 0; j < f.length; j++) {
-  //     const doc = f[j]
-  //     // yellow('old description', doc.description)
-  //     const foau = await findOneAndUpdate(
-  //       DATA_COLLECTION_NAME,
-  //       { _id: doc._id },
-  //       { [field]: replaceWithValue }
-  //     )
-  //     // yellow('           foau', foau[0].description)
-  //   }
-  // }
 
   // // categorize rules
   // blue('** categorizeRules **')
@@ -136,8 +136,8 @@ const main = async () => {
   //   console.log(`** id: ${rule.id}`)
   //   const { criteria, action } = rule
   //   const filter = filterBuilder(criteria)
-  //   // yellow('filter', filter)
   //   const f = await find(DATA_COLLECTION_NAME, filter)
+  //   printFilter(filter)
   //   printResult(rule.id, rule.numExpectedDocs, f.length)
   //   const { category1, category2 } = action
   //   // You probable don't need to loop here and you didn't (probably) need to do so for replaceRules either
@@ -145,7 +145,6 @@ const main = async () => {
   //     ? { category1, category2 }
   //     : { category1 }
   //   const udm = await updateMany(DATA_COLLECTION_NAME, filter, set)
-  //   // yellow('udm', udm)
   //   // { "typeOrig" : "atm" },
   // }
   writeCsvFile()

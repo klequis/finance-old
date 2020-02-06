@@ -23,21 +23,48 @@ export const wrappedFind = async filter => {
   )
 }
 
-export const operationBeginsWith = (field, value) => {
+const operationBeginsWith = (field, value) => {
   return { [field]: { $regex: `^${value}`, $options: 'im' } }
 }
 
-export const operationContains = (field, value) => {
+const operationContains = (field, value) => {
   return { [field]: { $regex: `${value}`, $options: 'im' } }
 }
 
-export const operationEquals = (field, value) => {
+const operationEquals = (field, value) => {
   return { [field]: { $eq: value } }
 }
 
+const operationRegex = (field, value) => {
+  
+  return { [field]: { $regex: `${value}`, $options: 'im' } }
+}
+
+const createRegex = (findValue, numAdditionalChars = 0) => {
+  const regExAsString =
+    numAdditionalChars > 0
+      ? `(${findValue}).{${numAdditionalChars}}`
+      : `(${findValue})`
+  return new RegExp(regExAsString)
+}
+
+const operationIn = (field, value) => {
+  // green('value', value)
+  const regex = new RegExp(value)
+  // green('regex', regex)
+  const r = { [field]: { $in: [regex] } }
+  // green('r', r)
+  return r
+}
+
 export const conditionBuilder = criteria => {
+
+  // TODO: hard coding descriptions  => origDescription
+  // Where should this logic be?
+
   // takes a single criteria object
-  const { field, operation, value } = criteria
+  const { field: origField, operation, value } = criteria
+  const field = origField === 'description' ? 'origDescription' : origField
   switch (operation) {
     case 'beginsWith':
       return operationBeginsWith(field, value)
@@ -45,6 +72,10 @@ export const conditionBuilder = criteria => {
       return operationEquals(field, value)
     case 'contains':
       return operationContains(field, value)
+    case 'regex':
+      return operationRegex(field, value)
+    case '$in':
+      return operationIn(field, value)
     default:
       redf(
         'deleteAction ERROR: ',
@@ -54,51 +85,39 @@ export const conditionBuilder = criteria => {
   }
 }
 
-export const filterBuilder = (criteria, includeOmitted = false) => {
-  const omit = { omit: { $exists: includeOmitted } }
-  // green('criteria', criteria)
-  if (criteria.length === 1) {
-    const singleCriteria = conditionBuilder(criteria[0])
-    // green('single criteria', singleCriteria)
-    const merged = mergeRight(singleCriteria, omit)
-    return merged
-  } else {
-    // green('** multi condition **')
-    const multipleCriteria = mergeAll(
-      criteria.map(c => {
-        const ret = conditionBuilder(c)
-        // green('condition', ret)
-        return ret
-      })
-    )
-    return { $and: [mergeRight(multipleCriteria, omit)] }
-  }
+export const filterBuilder = (criteria) => {
+  return mergeAll(
+    criteria.map(c => {
+      const ret = conditionBuilder(c)
+      green('condition', ret)
+      return ret
+    })
+  )
 }
 
 export const printResult = (id, expectRows, actualRows) => {
-  // yellow('actualRows', actualRows)
   expectRows === actualRows
     ? greenf(`OK: id: ${id}, expected: ${expectRows}, actual: ${actualRows}`)
     : redf(`ERROR: id: ${id}, expected: ${expectRows}, actual: ${actualRows}`)
 }
 
-export const makeRegEx = criteria => {
-  // operation: [beginsWith || contains]
-  const { operation, value } = criteria
-  let regEx
-  if (operation === 'beginsWith') {
-    regEx = new RegExp(`^${value}`)
-  }
-  if (operation === 'contains') {
-    regEx = new RegExp(`${value}`)
-  }
-  return regEx
-}
+// export const makeRegEx = criteria => {
+//   // operation: [beginsWith || contains]
+//   const { operation, value } = criteria
+//   let regEx
+//   if (operation === 'beginsWith') {
+//     regEx = new RegExp(`^${value}`)
+//   }
+//   if (operation === 'contains') {
+//     regEx = new RegExp(`${value}`)
+//   }
+//   return regEx
+// }
 
-export const andCondition = (criteria, doc) => {
-  return criteria.every(c => {
-    const { field } = c
-    const regEx = makeRegEx(c)
-    return doc[field].match(regEx)
-  })
-}
+// export const andCondition = (criteria, doc) => {
+//   return criteria.every(c => {
+//     const { field } = c
+//     const regEx = makeRegEx(c)
+//     return doc[field].match(regEx)
+//   })
+// }

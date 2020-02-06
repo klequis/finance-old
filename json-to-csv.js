@@ -3,8 +3,11 @@ import { DATA_COLLECTION_NAME } from 'db/constants'
 import fs from 'fs'
 import { union } from 'ramda'
 
+
+
 const jsonToCsv = json => {
   const replacer = (key, value) => (value === null ? '' : value) // specify how you want to handle null values here
+  /* TODO: dynamic header creation turned off for development
   const header = json.reduce((accum, curr, idx) => {
     // console.log('accum', accum)
     const keys = Object.keys(curr)
@@ -13,6 +16,25 @@ const jsonToCsv = json => {
     // console.log('b', b)
     return b
   }, [])
+
+  */
+  const header = [
+    'description',
+    'category1',
+    'category2',
+    'date',
+    'origDescription',
+    'debit',
+    'credit',
+    'typeOrig',
+    'omit',
+    'checkNumber',
+    '_id'
+  ]
+  
+  // console.log('header', header);
+  
+
   // const header = Object.keys(json[0])
   let csv = json.map(row =>
     header.map(fieldName => JSON.stringify(row[fieldName], replacer)).join(',')

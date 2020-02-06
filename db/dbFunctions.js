@@ -126,8 +126,6 @@ export const find = async (
       .project(projection)
       .collation(collation)
       .toArray()
-    // yellow('ret', ret)
-    // yellow('ret.length', ret.length)
     return ret
   } catch (e) {
     throw new Error(e.message)
@@ -226,8 +224,6 @@ export const findOneAndUpdate = async (
   returnOriginal = false
 ) => {
   try {
-    // yellow('filter', filter)
-    // yellow('update', update)
     const f = hasProp('_id', filter)
       ? mergeRight(filter, { _id: idStringToObjectID(filter._id) })
       : filter
@@ -237,7 +233,6 @@ export const findOneAndUpdate = async (
     const r = await db
       .collection(collection)
       .findOneAndUpdate(f, { $set: update }, { returnOriginal: returnOriginal })
-    // yellow('[r.value]', [r.value])
     return [r.value]
   } catch (e) {
     throw new Error(e.message)
